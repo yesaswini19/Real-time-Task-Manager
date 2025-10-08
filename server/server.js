@@ -8,7 +8,7 @@ const http = require('http');
 const { Server } = require('socket.io');
 const taskRoutes = require('./routes/taskRoutes');
 
-const path = require('path'); // Import the path module
+const path = require('path'); 
 
 const app = express();
 const server = http.createServer(app); 
@@ -18,17 +18,29 @@ const server = http.createServer(app);
 // --------------------------------------------------
 
 const PORT = process.env.PORT || 8081;
-const MONGO_URI = "mongodb+srv://pamidiyesaswini08_db_user:database@taskcluster1.3jbubs.mongodb.net/";
+const MONGO_URI = process.env.MONGODB_URI; 
 const isDevelopment = process.env.NODE_ENV !== 'production'; 
 
-// CORS setup: Only enable CORS for local development (Render handles production automatically)
-if (isDevelopment) {
-    app.use(cors({
-        origin: 'http://localhost:3000',
-        methods: ['GET', 'POST', 'PATCH', 'DELETE'],
-        credentials: true
-    }));
-}
+// CRITICAL FIX: Explicitly define the allowed origin(s). 
+// Render requires the HTTPS origin to be explicitly allowed for WebSocket.
+const allowedOrigins = [
+    'http://localhost:3000', // Local Dev
+    'https://real-time-task-manager.onrender.com' // Render Production URL
+];
+
+// CORS setup: Allow requests from the React client 
+app.use(cors({
+    origin: (origin, callback) => {
+        // Allow requests with no origin (like mobile apps or curl) and explicit allowed origins
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    methods: ['GET', 'POST', 'PATCH', 'DELETE'],
+    credentials: true
+}));
 
 // Middleware to parse JSON bodies from requests
 app.use(express.json());
@@ -37,10 +49,12 @@ app.use(express.json());
 // SOCKET.IO SETUP
 // --------------------------------------------------
 
+// Initialize Socket.io server
 const io = new Server(server, {
     path: '/socket.io/', 
     cors: {
-        origin: isDevelopment ? 'http://localhost:3000' : false, 
+        // CRITICAL FIX: Socket.IO CORS must also explicitly allow the Render origin
+        origin: allowedOrigins, 
         methods: ['GET', 'POST']
     }
 });
@@ -57,9 +71,7 @@ io.on('connection', (socket) => {
     });
 });
 
-// --------------------------------------------------
-// ROUTES
-// --------------------------------------------------
+// ... (Rest of the file remains the same)
 
 // Prefix all task API routes with /api/tasks
 app.use('/api/tasks', taskRoutes);
@@ -68,18 +80,16 @@ app.use('/api/tasks', taskRoutes);
 // DEPLOYMENT CONFIGURATION: SERVE STATIC CLIENT FILES
 // --------------------------------------------------
 
-// --- FIX START: FORCE SERVING OF CLIENT BUILD ---
-
 // 1. Serve static files (JS, CSS, images) from the client's build folder
 const buildPath = path.join(__dirname, '..', 'client', 'build');
 app.use(express.static(buildPath));
 
 // 2. Fallback Route: For any non-API request, serve the index.html
-// This ensures the React application is loaded for the root path and any internal React routes.
 app.get('*', (req, res) => {
     
-    // Safety check for local dev, preventing files from breaking locally
+    // Safety check for local dev
     if (isDevelopment) {
+        // If still in dev, serve the simple test message
         return res.send('Task Manager API is running in Development Mode!');
     }
     
@@ -87,12 +97,7 @@ app.get('*', (req, res) => {
     res.sendFile(path.join(buildPath, 'index.html'));
 });
 
-// --- FIX END ---
-
-// --------------------------------------------------
-// DATABASE CONNECTION AND SERVER START
-// --------------------------------------------------
-
+// ... (The database connection and server start block)
 if (!MONGO_URI) {
     console.error("FATAL ERROR: MONGO_URI is not defined in the environment.");
     process.exit(1);
