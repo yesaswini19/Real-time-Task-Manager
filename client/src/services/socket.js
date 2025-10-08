@@ -1,23 +1,29 @@
 // client/src/services/socket.js
+
 import { io } from 'socket.io-client';
 
-// Define the URL for your server.
-// IMPORTANT: This must match the URL where your Node.js server is running.
-// Use 'http://localhost:8081' for development.
-const SERVER_URL = 'http://localhost:8081'; 
+// --- CRITICAL DEPLOYMENT FIX ---
+// Determine the base URL based on the environment
+const isDevelopment = process.env.NODE_ENV === 'development';
+const SOCKET_SERVER_URL = isDevelopment 
+    ? 'http://localhost:8081' // Local development target
+    : window.location.origin; // Production target (current domain: https://real-time-task-manager.onrender.com)
 
-// Create and export the single socket instance.
-// autoConnect is true by default, meaning it connects immediately.
-export const socket = io(SERVER_URL);
+// Initialize the socket connection
+export const socket = io(SOCKET_SERVER_URL, {
+    // Optional: Add transport options if needed, but simple connection should work.
+    transports: ['websocket', 'polling'] 
+});
 
-// Optional: You can add connection status logging here
+// Add listeners for connection status
 socket.on('connect', () => {
-    console.log(`[Socket] Connected to server: ${socket.id}`);
+    console.log('Socket.io connected successfully.');
 });
 
 socket.on('disconnect', (reason) => {
-    console.log(`[Socket] Disconnected from server. Reason: ${reason}`);
+    console.log('Socket.io disconnected. Reason:', reason);
 });
 
-// Export the socket instance for use in components like TaskBoard.js
-export default socket;
+socket.on('connect_error', (error) => {
+    console.error('Socket.io connection error:', error);
+});

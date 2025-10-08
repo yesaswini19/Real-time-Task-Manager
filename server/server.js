@@ -18,7 +18,7 @@ const server = http.createServer(app);
 // --------------------------------------------------
 
 const PORT = process.env.PORT || 8081;
-const MONGO_URI = process.env.MONGODB_URI; 
+const MONGO_URI = "mongodb+srv://pamidiyesaswini08_db_user:database@taskcluster1.3jbubs.mongodb.net/";
 const isDevelopment = process.env.NODE_ENV !== 'production'; 
 
 // CORS setup: Only enable CORS for local development (Render handles production automatically)
