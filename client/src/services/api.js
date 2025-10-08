@@ -1,68 +1,60 @@
 // client/src/services/api.js
+
 import axios from 'axios';
 
-// Define the base URL for your Express API.
-// Use localhost:8081 for development. 
-// For AWS Elastic Beanstalk deployment, this needs to be updated to your EB URL.
-const API_BASE_URL = 'http://localhost:8081/api/tasks';
+// --- CRITICAL DEPLOYMENT FIX ---
+// In development (local machine), the client runs on 3000 and the server on 8081.
+// In production (on Render), the server hosts the client on the same URL,
+// so the API base URL should be the current host's URL (i.e., just '/api/').
+const isDevelopment = process.env.NODE_ENV === 'development';
 
-// ----------------------------------------------------
-// AXIOS INSTANCE (Optional, but good practice)
-// ----------------------------------------------------
-// Create a reusable Axios client for your API calls
 const apiClient = axios.create({
-  baseURL: API_BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  // You would add interceptors here for error handling or authentication tokens
+    // If running locally, target the backend at localhost:8081
+    // If running in production (on Render), use an empty string or '/' to target the same host.
+    baseURL: isDevelopment ? 'http://localhost:8081/api/tasks' : '/api/tasks',
+    
+    // NOTE: If you were using credentials (like cookies), you would include:
+    // withCredentials: true,
 });
+// -------------------------------
 
-// ----------------------------------------------------
-// TASK CRUD FUNCTIONS
-// ----------------------------------------------------
-
-// GET: Fetch all tasks
-export const fetchAllTasks = async () => {
-  try {
-    const response = await apiClient.get('/');
-    return response.data;
-  } catch (error) {
-    console.error("Error fetching tasks:", error);
-    // Throw error to be handled by the calling component
-    throw error; 
-  }
+// Helper function to handle API calls
+export const fetchTasksApi = async () => {
+    try {
+        const response = await apiClient.get('/');
+        return { success: true, tasks: response.data };
+    } catch (error) {
+        console.error('Error fetching tasks:', error);
+        return { success: false, error };
+    }
 };
 
-// POST: Create a new task
-export const createTask = async (taskData) => {
-  try {
-    const response = await apiClient.post('/', taskData);
-    return response.data;
-  } catch (error) {
-    console.error("Error creating task:", error);
-    throw error;
-  }
+export const createTaskApi = async (taskData) => {
+    try {
+        const response = await apiClient.post('/', taskData);
+        return { success: true, task: response.data };
+    } catch (error) {
+        console.error('Error creating task:', error);
+        return { success: false, error };
+    }
 };
 
-// PATCH: Update an existing task (e.g., toggle isCompleted)
-export const updateTask = async (id, updates) => {
-  try {
-    const response = await apiClient.patch(`/${id}`, updates);
-    return response.data;
-  } catch (error) {
-    console.error(`Error updating task ${id}:`, error);
-    throw error;
-  }
+export const updateTaskApi = async ({ id, updates }) => {
+    try {
+        const response = await apiClient.patch(`/${id}`, updates);
+        return { success: true, task: response.data };
+    } catch (error) {
+        console.error('Error updating task:', error);
+        return { success: false, error };
+    }
 };
 
-// DELETE: Delete a task
 export const deleteTaskApi = async (id) => {
-  try {
-    await apiClient.delete(`/${id}`);
-    return { success: true, message: "Task deleted" };
-  } catch (error) {
-    console.error(`Error deleting task ${id}:`, error);
-    throw error;
-  }
+    try {
+        await apiClient.delete(`/${id}`);
+        return { success: true, message: "Task deleted successfully" };
+    } catch (error) {
+        console.error('Error deleting task:', error);
+        return { success: false, error };
+    }
 };
