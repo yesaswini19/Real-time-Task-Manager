@@ -18,13 +18,11 @@ const server = http.createServer(app);
 // --------------------------------------------------
 
 const PORT = process.env.PORT || 8081;
-// Use the variable name MONGODB_URI which is set on Render
 const MONGO_URI = process.env.MONGODB_URI; 
-const isDevelopment = process.env.NODE_ENV !== 'production'; // Check if NOT production
+const isDevelopment = process.env.NODE_ENV !== 'production'; 
 
-// CORS setup: Only enable CORS for local development
+// CORS setup: Only enable CORS for local development (Render handles production automatically)
 if (isDevelopment) {
-    // Only applies locally, Render handles production CORS automatically
     app.use(cors({
         origin: 'http://localhost:3000',
         methods: ['GET', 'POST', 'PATCH', 'DELETE'],
@@ -39,22 +37,18 @@ app.use(express.json());
 // SOCKET.IO SETUP
 // --------------------------------------------------
 
-// Initialize Socket.io server
 const io = new Server(server, {
     cors: {
-        // In development, allow localhost:3000. In production, same origin works.
         origin: isDevelopment ? 'http://localhost:3000' : false, 
         methods: ['GET', 'POST']
     }
 });
 
-// Attach the socket.io instance to the request object so routes can use it
 app.use((req, res, next) => {
     req.io = io;
     next();
 });
 
-// Socket.io connection logging
 io.on('connection', (socket) => {
     console.log(`[Socket] A user connected: ${socket.id}`);
     socket.on('disconnect', (reason) => {
@@ -66,32 +60,33 @@ io.on('connection', (socket) => {
 // ROUTES
 // --------------------------------------------------
 
-// Prefix all task routes with /api/tasks
+// Prefix all task API routes with /api/tasks
 app.use('/api/tasks', taskRoutes);
-
 
 // --------------------------------------------------
 // DEPLOYMENT CONFIGURATION: SERVE STATIC CLIENT FILES
 // --------------------------------------------------
 
-// The client files (React build) should be served FIRST.
-// We assume that the client build step (npm run build) has run and created the build directory.
+// --- FIX START: FORCE SERVING OF CLIENT BUILD ---
 
-// 1. Serve any static files (like JS, CSS, images) from the client's build folder
-app.use(express.static(path.join(__dirname, '..', 'client', 'build')));
+// 1. Serve static files (JS, CSS, images) from the client's build folder
+const buildPath = path.join(__dirname, '..', 'client', 'build');
+app.use(express.static(buildPath));
 
-// 2. Handle any requests not handled by the API routes by serving the client's index.html
-// This allows the React routing to take over. This route MUST be last.
+// 2. Fallback Route: For any non-API request, serve the index.html
+// This ensures the React application is loaded for the root path and any internal React routes.
 app.get('*', (req, res) => {
-    // If running in development and we hit this route, it's the simple test message.
+    
+    // Safety check for local dev, preventing files from breaking locally
     if (isDevelopment) {
         return res.send('Task Manager API is running in Development Mode!');
     }
     
-    // In production, serve the React application
-    res.sendFile(path.resolve(__dirname, '..', 'client', 'build', 'index.html'));
+    // In production, always serve the React index.html for all non-API routes.
+    res.sendFile(path.join(buildPath, 'index.html'));
 });
 
+// --- FIX END ---
 
 // --------------------------------------------------
 // DATABASE CONNECTION AND SERVER START
@@ -102,11 +97,9 @@ if (!MONGO_URI) {
     process.exit(1);
 }
 
-// Connect to MongoDB
 mongoose.connect(MONGO_URI)
     .then(() => {
         console.log('MongoDB connected successfully.');
-        // Start the HTTP server only after successful DB connection
         server.listen(PORT, () => {
             console.log(`Server is running on port ${PORT}`);
         });
@@ -115,7 +108,6 @@ mongoose.connect(MONGO_URI)
         console.error('MongoDB connection error:', err);
     });
 
-// Handle graceful shutdown
 process.on('SIGINT', () => {
     console.log('Server shutting down...');
     mongoose.connection.close(() => {
