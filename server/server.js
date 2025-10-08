@@ -38,6 +38,7 @@ app.use(express.json());
 // --------------------------------------------------
 
 const io = new Server(server, {
+    path: '/socket.io/', 
     cors: {
         origin: isDevelopment ? 'http://localhost:3000' : false, 
         methods: ['GET', 'POST']

@@ -12,6 +12,7 @@ const SOCKET_SERVER_URL = isDevelopment
 // Initialize the socket connection
 export const socket = io(SOCKET_SERVER_URL, {
     // Optional: Add transport options if needed, but simple connection should work.
+    path: '/socket.io/',
     transports: ['websocket', 'polling'] 
 });
 
