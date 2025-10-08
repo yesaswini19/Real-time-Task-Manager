@@ -1,0 +1,11 @@
+Dependencies
+/node_modules
+/client/node_modules
+/server/node_modules
+
+Environment Variables (CRITICAL: NEVER upload these secrets!)
+.env
+
+Build Artifacts
+/client/build
+/server/build
