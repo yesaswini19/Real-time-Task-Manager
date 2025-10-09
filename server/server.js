@@ -18,7 +18,7 @@ const server = http.createServer(app);
 // --------------------------------------------------
 
 const PORT = process.env.PORT || 8081;
-const MONGO_URI = process.env.MONGODB_URI; 
+const MONGO_URI = process.env.MONGO_URI;
 const isDevelopment = process.env.NODE_ENV !== 'production'; 
 
 // CRITICAL FIX: Explicitly define the allowed origin(s). 
