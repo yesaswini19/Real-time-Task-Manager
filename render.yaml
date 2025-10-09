@@ -1,0 +1,29 @@
+render.yaml
+This file tells Render exactly how to deploy your service, ensuring
+the WebSocket protocol is correctly supported by the proxy.
+services:
+
+type: web
+name: real-time-task-manager
+
+CRITICAL FIX: Ensure websockets are enabled and proxying is correct
+env: node
+plan: free
+repo: https://github.com/yesaswini19/Real-time-Task-Manager
+branch: main
+buildCommand: npm install --prefix server && npm install --prefix client && npm run build --prefix client
+startCommand: npm start --prefix server
+autoDeploy: true
+
+The port needs to be 8081 as defined in your server/server.js
+envVars:
+
+key: PORT
+value: 8081
+
+key: NODE_ENV
+value: production
+
+You need to manually add your MONGO_URI here or make sure it exists in the Render UI
+key: MONGODB_URI
+sync: false # Set this to false if you add the value directly in the Render UI
