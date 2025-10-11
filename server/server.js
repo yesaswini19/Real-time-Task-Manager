@@ -1,23 +1,19 @@
 // Load environment variables from .env file
 require('dotenv').config(); 
-
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const http = require('http'); 
 const { Server } = require('socket.io');
 const taskRoutes = require('./routes/taskRoutes');
-
 const path = require('path'); 
-
 const app = express();
 const server = http.createServer(app); 
-
 // --------------------------------------------------
 // CONFIGURATION
 // --------------------------------------------------
 
-const PORT = process.env.PORT || 8081;
+const PORT = process.env.PORT;
 const MONGO_URI = process.env.MONGO_URI;
 const isDevelopment = process.env.NODE_ENV !== 'production'; 
 
