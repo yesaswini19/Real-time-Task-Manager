@@ -24,6 +24,4 @@ value: 8081
 key: NODE_ENV
 value: production
 
-You need to manually add your MONGO_URI here or make sure it exists in the Render UI
-key: MONGODB_URI
-sync: false # Set this to false if you add the value directly in the Render UI
+MONGODB_URI IS REMOVED HERE, IT MUST ONLY BE IN THE RENDER UI.
