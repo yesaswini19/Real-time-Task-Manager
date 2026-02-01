@@ -7,7 +7,7 @@ import { io } from 'socket.io-client';
 const isDevelopment = process.env.NODE_ENV === 'development';
 const SOCKET_SERVER_URL = isDevelopment 
     ? 'http://localhost:8081' // Local development target
-    : window.location.origin; // Production target (current domain: https://real-time-task-manager.onrender.com)
+    : 'https://real-time-task-manager.onrender.com';
 
 // Initialize the socket connection
 export const socket = io(SOCKET_SERVER_URL, {

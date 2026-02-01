@@ -50,26 +50,26 @@ const TaskForm = ({ onTaskAdded }) => {
     }
   };
 
-  return (
-    <form onSubmit={handleSubmit} style={{ marginBottom: '20px', padding: '15px', border: '1px dashed #007bff' }}>
-      <input
-        type="text"
-        placeholder="Task Title"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-        required
-      />
-      <textarea
-        placeholder="Task Description"
-        value={description}
-        onChange={(e) => setDescription(e.target.value)}
-        required
-      />
-      <button type="submit">Add New Task (Real-Time)</button>
-    </form>
-  );
-};
+  // Inside your TaskBoard.js, change the return of TaskForm to this:
+return (
+  <form onSubmit={handleSubmit} className="task-board-container">
+    <input
+      type="text"
+      placeholder="Task Title"
+      value={title}
+      onChange={(e) => setTitle(e.target.value)}
+      required
+    />
+    <textarea
+      placeholder="Task Description"
+      value={description}
+      onChange={(e) => setDescription(e.target.value)}
+      required
+    />
+    <button type="submit">Add New Task (Real-Time)</button>
+  </form>
 
+)};
 
 const TaskBoard = () => {
   const [tasks, setTasks] = useState([]);
