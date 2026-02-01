@@ -60,9 +60,9 @@ app.use((req, res, next) => {
 });
 
 io.on('connection', (socket) => {
-    console.log("[Socket] A user connected: ${socket.id}");
+    console.log(`[Socket] A user connected: ${socket.id}`);
     socket.on('disconnect', (reason) => {
-        console.log("[Socket] User disconnected: ${socket.id}. Reason: ${reason}");
+        console.log(`[Socket] User disconnected: ${socket.id}. Reason: ${reason}`);
     });
 });
 
